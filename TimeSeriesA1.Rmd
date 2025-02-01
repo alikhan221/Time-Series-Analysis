@@ -1,0 +1,108 @@
+---
+title: 'STA457: Time Series Analysis'
+subtitle: Assignment 1
+date: "2025-01-24"
+output:
+  pdf_document: default
+  html_document: default
+---
+\maketitle
+
+\section{Question 1}
+\subsection{1a) If the model is correct, what is the estimated average annual increase in E-
+Commerce sales?}
+```{r}
+library(tidyverse)
+library(stringr)
+
+
+# Read in the data
+e_com = read.csv("/Users/alikh/Downloads/E-Commerce.csv")
+
+# Classic regression approach
+
+# Specify the year
+e_com$Year = as.numeric(substr(e_com$Quarter, 1,4))
+
+# Specify the indicator variables
+e_com$Q1 = as.numeric(ifelse(substr(e_com$Quarter, 7,8)=="1",1,0))
+e_com$Q2 = as.numeric(ifelse(substr(e_com$Quarter, 7,8)=="2",1,0))
+e_com$Q3 = as.numeric(ifelse(substr(e_com$Quarter, 7,8)=="3",1,0))
+e_com$Q4 = as.numeric(ifelse(substr(e_com$Quarter, 7,8)=="4",1,0))
+
+# Fit the model
+model_reg = lm(Value ~ Year + Q1 + Q2 + Q3 + Q4, data = e_com)
+
+###############################
+## Please start your code here:
+
+# we see that the original model does not include Q4 due to perfect multicollinearity
+# as a result, we remove the intercept in order to achieve the most accurate annual increase
+
+no_int_model = lm(Value ~ Year + Q1 + Q2 + Q3 + Q4 - 1, data = e_com)
+
+# by heading both models, we see that the original model does not have any values
+# for Q4, and by removing the intercept, we have values for Q4
+no_int_model$coefficients
+model_reg$coefficients
+
+# calculating the average annual increase 
+annual_inc <- coefficients(no_int_model)["Year"]
+annual_inc
+
+```
+The estimated annual increase in E-commerce sales is 29,616.14
+
+\subsection{1b) If the model is correct, does the average sales increase or decrease from the third quarter to the fourth quarter? And, by what percentage does it increase or decrease? (keep 3 decimal places)}
+```{r}
+
+coef <- coefficients(no_int_model)
+
+alpha_3 <- coef["Q3"]
+alpha_4 <- coef["Q4"]
+
+percent_change <- ((alpha_4 - alpha_3)/alpha_3) * 100
+percent_change
+
+
+```
+There is a 23.566% increase from the third quarter to the fourth quarter
+
+\subsection{1c) What happens if you include an intercept term in the model in (a)? Explain why
+there was a problem.}
+```{r}
+# lets create a model with the intercept included and try to do part a and b again
+int_inc_model <- lm(Value ~ Year + Q1 + Q2 + Q3 + Q4, data = e_com)
+
+# doing part a again
+beta2 <- coef(int_inc_model)["t"]
+annual_increase2 <- beta2 * 4
+annual_increase2
+
+# doing part b again
+coef2 <- coefficients(int_inc_model)
+
+a_3 <- coef2["Q3"]
+a_4 <- coef2["Q4"]
+
+percent_change2 <- ((a_4 - a_3)/a_3) * 100
+percent_change2
+
+```
+From the above, we see that while the annual increase remains the same, the percent change is unable to be calculated as Q4 is returned as 'NA'. This is because when we include the intercept, due to the fact that there is high multicollinearity between the Quarters, it excludes one quarter from the model to compensate. This 
+
+
+\section{Question 2}
+```{r}
+
+
+
+```
+
+\section{Question 3}
+```{r}
+
+
+
+```
+
